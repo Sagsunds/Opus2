@@ -2,6 +2,15 @@
 <link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
 
 <!-- Poll list -->
+{% if user.is_authenticated %}
+    <p>Welcome, {{ user.username }}! <a href="{% url 'polls:logout' %}">Log out</a></p>
+{% else %}
+    <p>
+        <a href="{% url 'polls:login' %}">Log in</a> |
+        <a href="{% url 'polls:register' %}">Register</a>
+    </p>
+{% endif %}
+
 {% if latest_question_list %}
     <ul>
         {% for question in latest_question_list %}
