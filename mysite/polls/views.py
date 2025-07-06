@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.mixins import LoginRequiredMixin #flaw 1: Use this to make login more secure
+from django.contrib.auth.mixins import LoginRequiredMixin #flaw2
 from .forms import RegisterForm
 
 from .models import Choice, Question, Vote
@@ -42,7 +42,7 @@ def login_view(request): #flaw1
             login(request, user)
             return redirect("polls:index") 
         else:
-            return render(request, "polls/login.html", {"error": "Virheellinen tunnus tai salasana"})
+            return render(request, "polls/login.html", {"error": "Wrong password or username"})
     return render(request, "polls/login.html") 
 
 def logout_view(request):
@@ -53,6 +53,7 @@ def register_view(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
+            form.save()
             return redirect("polls:login") 
     else:
         form = RegisterForm()
