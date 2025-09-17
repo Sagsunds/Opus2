@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ question.question_text }} – Results</title>
+    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
 </head>
@@ -14,7 +15,7 @@
     {% endfor %}
     </ul>
     <br>
-   <!--#flaw5: <p><a href="{% url 'polls:detail' question.id %}">Vote again?</a></p>-->
+    <p><a href="{% url 'polls:detail' question.id %}">Vote again?</a></p>
     </br>
     <p><a href="{% url 'polls:index' %}">Return</a></p>
 </body>

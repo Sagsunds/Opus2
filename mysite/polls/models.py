@@ -26,7 +26,9 @@ from django.contrib.auth.models import User #flaw3
 class Vote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice = models.ForeignKey(Choice, on_delete=models.CASCADE, null=False) #flaw5
 
-    class Meta:
-        unique_together = ('user', 'question')
+class Meta:
+    unique_together = ('user', 'question')
+
  

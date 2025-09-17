@@ -7,7 +7,9 @@ from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin #flaw2
 from .forms import RegisterForm
+from django.http import JsonResponse
 
+import ipaddress, socket, urllib.parse, urllib.request #flaw1
 from .models import Choice, Question, Vote
 
 
@@ -77,25 +79,51 @@ def results(request, question_id):
 
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
-    
-    if Vote.objects.filter(user=request.user, question=question).exists():#flaw3
+    if request.method != "POST":
+        return redirect('polls:detail', question_id=question.id)
+
+    '''
+    if Vote.objects.filter(user=request.user, question=question).exists(): #flaw3
         return render(request, 'polls/detail.html', {
             'question': question,
             'error_message': "You have already voted on this question.",
         })
+    '''
 
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
-        # Redisplay the question voting form.
         return render(request, 'polls/detail.html', {
             'question': question,
-            'error_message': "You didn't select a valid choice.",
+            'error_message': "You must select a valid choice before voting.",
         })
-    else:
-        selected_choice.votes += 1
-        selected_choice.save()
 
-        Vote.objects.create(user=request.user, question=question) #flaw3
+    previous_vote = Vote.objects.filter(user=request.user, question=question).first() #flaw5
+    if previous_vote:
+        previous_choice = previous_vote.choice
+        previous_choice.votes = max(previous_choice.votes - 1, 0)
+        previous_choice.save()
+        previous_vote.delete()
 
-        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+    selected_choice.votes += 1
+    selected_choice.save()
+    Vote.objects.create(user=request.user, question=question, choice=selected_choice)
+
+    return redirect('polls:results', pk=question.id)
+    
+def safe_get(url, timeout=5): #flaw1
+    parsed = urllib.parse.urlparse(url)
+
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError("Only http/https allowed")
+
+    infos = socket.getaddrinfo(parsed.hostname, None)
+    for info in infos:
+        ip = ipaddress.ip_address(info[4][0])
+        if ip.is_private or ip.is_loopback:
+            raise ValueError("Blocked private/loopback IP")
+
+    with urllib.request.urlopen(url, timeout=timeout) as response:
+        return response.read().decode("utf-8")[:200] 
+
+
