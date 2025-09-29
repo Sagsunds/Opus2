@@ -81,7 +81,7 @@ def vote(request, question_id):
         return redirect('polls:detail', question_id=question.id)
 
     '''
-    if Vote.objects.filter(user=request.user, question=question).exists(): #flaw3
+    if Vote.objects.filter(user=request.user, question=question).exists(): #flaw2
         return render(request, 'polls/detail.html', {
             'question': question,
             'error_message': "You have already voted on this question.",
