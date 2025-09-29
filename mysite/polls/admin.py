@@ -18,10 +18,6 @@ class QuestionAdmin(admin.ModelAdmin):
     ]
     inlines = [ChoiceInline]
 
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin #flaw4
-from django.contrib.auth.models import User
-from .models import Choice, Question, Vote
-
 class VoteInline(admin.TabularInline):# Flaw 4
     model = Vote
     extra = 0 
