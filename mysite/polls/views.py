@@ -5,11 +5,9 @@ from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.mixins import LoginRequiredMixin #flaw2
+from django.contrib.auth.mixins import LoginRequiredMixin #flaw1
 from .forms import RegisterForm
-from django.http import JsonResponse
 
-import ipaddress, socket, urllib.parse, urllib.request #flaw1
 from .models import Choice, Question, Vote
 
 
@@ -22,7 +20,7 @@ class IndexView(generic.ListView):
         pub_date__lte=timezone.now()
          ).order_by('-pub_date')[:5]
 
-class DetailView(LoginRequiredMixin, generic.DetailView): #flaw2
+class DetailView(LoginRequiredMixin, generic.DetailView): #flaw1
     model = Question
     template_name = 'polls/detail.html'
     def get_queryset(self):
@@ -31,7 +29,7 @@ class DetailView(LoginRequiredMixin, generic.DetailView): #flaw2
         """
         return Question.objects.filter(pub_date__lte=timezone.now())
 
-class ResultsView(LoginRequiredMixin, generic.DetailView): #flaw2
+class ResultsView(LoginRequiredMixin, generic.DetailView): #flaw1
     model = Question
     template_name = 'polls/results.html'
 
@@ -78,7 +76,7 @@ def results(request, question_id):
     return render(request, 'polls/results.html', {'question': question})
 
 def vote(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
+    question = get_object_or_404(Question, pk=question_id) 
     if request.method != "POST":
         return redirect('polls:detail', question_id=question.id)
 
@@ -111,19 +109,6 @@ def vote(request, question_id):
 
     return redirect('polls:results', pk=question.id)
     
-def safe_get(url, timeout=5): #flaw1
-    parsed = urllib.parse.urlparse(url)
 
-    if parsed.scheme not in ("http", "https"):
-        raise ValueError("Only http/https allowed")
-
-    infos = socket.getaddrinfo(parsed.hostname, None)
-    for info in infos:
-        ip = ipaddress.ip_address(info[4][0])
-        if ip.is_private or ip.is_loopback:
-            raise ValueError("Blocked private/loopback IP")
-
-    with urllib.request.urlopen(url, timeout=timeout) as response:
-        return response.read().decode("utf-8")[:200] 
 
 
