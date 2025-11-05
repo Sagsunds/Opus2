@@ -61,8 +61,7 @@ def register_view(request):
     else:
         form = RegisterForm()
     return render(request, "polls/register.html", {"form": form})
-'''
-# flaw1 fixes commented out
+'''#flaw1 fixes commented out
 
 def index(request):
     latest_question_list = Question.objects.order_by('-pub_date')[:5]
@@ -107,7 +106,7 @@ def vote(request, question_id):
         previous_choice.votes = max(previous_choice.votes - 1, 0)
         previous_choice.save()
         previous_vote.delete()
-'''
+'''#flaw5 fixes commented out
 
     selected_choice.votes += 1
     selected_choice.save()
