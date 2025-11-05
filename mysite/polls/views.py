@@ -90,7 +90,7 @@ def vote(request, question_id):
             'question': question,
             'error_message': "You have already voted on this question.",
         })
-    ''' #flaw2 commented out
+    ''' #flaw2 commented out (keep commented/redundant)
 
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
