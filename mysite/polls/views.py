@@ -4,9 +4,9 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.mixins import LoginRequiredMixin #flaw1
-from .forms import RegisterForm
+#from django.contrib.auth import authenticate, login, logout #flaw1
+#from django.contrib.auth.mixins import LoginRequiredMixin #flaw1
+#from .forms import RegisterForm #flaw1
 
 from .models import Choice, Question, Vote
 
@@ -20,7 +20,8 @@ class IndexView(generic.ListView):
         pub_date__lte=timezone.now()
          ).order_by('-pub_date')[:5]
 
-class DetailView(LoginRequiredMixin, generic.DetailView): #flaw1
+#class DetailView(LoginRequiredMixin, generic.DetailView): #flaw1
+class DetailView(generic.DetailView): 
     model = Question
     template_name = 'polls/detail.html'
     def get_queryset(self):
@@ -28,11 +29,13 @@ class DetailView(LoginRequiredMixin, generic.DetailView): #flaw1
         Excludes any questions that aren't published yet.
         """
         return Question.objects.filter(pub_date__lte=timezone.now())
-
-class ResultsView(LoginRequiredMixin, generic.DetailView): #flaw1
+        
+# class ResultsView(LoginRequiredMixin, generic.DetailView): #flaw1
+class ResultsView(generic.DetailView): 
     model = Question
     template_name = 'polls/results.html'
 
+'''
 def login_view(request): #flaw1
     if request.method == "POST":
         username = request.POST["username"]
@@ -58,6 +61,8 @@ def register_view(request):
     else:
         form = RegisterForm()
     return render(request, "polls/register.html", {"form": form})
+'''
+# flaw1 fixes commented out
 
 def index(request):
     latest_question_list = Question.objects.order_by('-pub_date')[:5]
@@ -86,7 +91,7 @@ def vote(request, question_id):
             'question': question,
             'error_message': "You have already voted on this question.",
         })
-    '''
+    ''' #flaw2 commented out
 
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
@@ -95,17 +100,18 @@ def vote(request, question_id):
             'question': question,
             'error_message': "You must select a valid choice before voting.",
         })
-
+'''
     previous_vote = Vote.objects.filter(user=request.user, question=question).first() #flaw5
     if previous_vote:
         previous_choice = previous_vote.choice
         previous_choice.votes = max(previous_choice.votes - 1, 0)
         previous_choice.save()
         previous_vote.delete()
+'''
 
     selected_choice.votes += 1
     selected_choice.save()
-    Vote.objects.create(user=request.user, question=question, choice=selected_choice)
+    #Vote.objects.create(user=request.user, question=question, choice=selected_choice) #flaw5
 
     return redirect('polls:results', pk=question.id)
     
